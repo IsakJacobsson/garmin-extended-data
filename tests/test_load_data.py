@@ -1,0 +1,68 @@
+import pandas as pd
+from load_data import load_data
+
+csv_file = "tests/testfiles/activities.csv"
+
+def test_string_columns():
+    df = load_data(csv_file)
+    string_cols = ['Aktivitetstyp', 'Namn', 'Medelkontakttidsbalans']
+    for col in string_cols:
+        assert df[col].dtype == object
+        # Check no leading/trailing spaces
+        assert all(df[col].str.strip() == df[col])
+    
+    assert df.loc[0, 'Namn'] == 'Väldigt konstigt namn.'
+
+def test_boolean_columns():
+    df = load_data(csv_file)
+    boolean_cols = ['Favorit', 'Dekompression']
+    for col in boolean_cols:
+        assert df[col].dtype == bool
+
+def test_datetime_column():
+    df = load_data(csv_file)
+    date_cols = ['Datum']
+    for col in date_cols:
+        assert pd.api.types.is_datetime64_any_dtype(df[col])
+
+def test_steps():
+    df = load_data(csv_file)
+    assert df.loc[0, 'Steg'] == 6234
+
+def test_swim_distance():
+    df = load_data(csv_file)
+    swim_rows =  df[df["Aktivitetstyp"] == "Simbassäng"]
+    assert swim_rows.iloc[0]['Distans'] == 1.0
+
+def test_numeric_columns():
+    df = load_data(csv_file)
+    numeric_cols = [
+        'Distans', 'Kalorier', 'Medelpuls', 'Maxpuls', 'Aerobisk Training Effect',
+        'Medellöpkadens', 'Maximal löpkadens', 'Total stigning', 'Totalt nedför',
+        'Medelsteglängd', 'Medelvärde för vertikal kvot', 'Medelvärde för vertikal rörelse',
+        'Medeltid för markkontakt', 'Normalized Power® (NP®)', 'Training Stress Score®',
+        'Med. kraft', 'Maxkraft', 'Totalt antal årtag', 'Medel-Swolf', 'Medelårtagstempo',
+        'Steg', 'Totalt antal repetitioner', 'Totalt antal set', 'Urladdning av Body Battery',
+        'Minsta temperatur', 'Antal varv', 'Maximal temperatur', 'Genomsnittlig andning',
+        'Minsta andningshastighet', 'Maximal andningshastighet', 'Stressändring',
+        'Medestress', 'Maxbelastning', 'Min. höjd', 'Max. höjd'
+    ]
+    for col in numeric_cols:
+        pd.api.types.is_numeric_dtype(df[col])
+
+def test_timedelta_columns():
+    df = load_data(csv_file)
+    time_cols = [
+        'Tid', 'Medeltempo', 'Bästa tempo', 'Medelvärde GAP',
+        'Bästa varvtid', 'Start för stress', 'Slut för stress', 'Färdtid', 'Total tid']
+    for col in time_cols:
+        assert pd.api.types.is_timedelta64_dtype(df[col])
+
+    assert df.loc[0, 'Tid'].seconds == 46*60 + 46
+    assert df.loc[0, 'Medeltempo'].seconds == 6*60 + 22
+    assert df.loc[0, 'Bästa tempo'].seconds == 2*60 + 34
+    assert df.loc[0, 'Bästa varvtid'].total_seconds() == 56.9
+    assert df.loc[0, 'Färdtid'].seconds == 38*60 + 47
+    assert df.loc[0, 'Total tid'].seconds == 46*60 + 48
+
+
