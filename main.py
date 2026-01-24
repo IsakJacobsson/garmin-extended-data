@@ -33,7 +33,7 @@ def activity_metrics_over_time_section(df):
         valid_metrics = get_valid_metrics(activity_df)
         selected_metric = metric_selector(valid_metrics)
 
-    activity_df["Tid"] = activity_df["Tid"].dt.total_seconds() / 60  # minutes
+    activity_df["Tid"] = activity_df["Tid"].dt.total_seconds() / 3600  # hours
 
     if len(selected_activities) == 0:
         st.warning("Please select at least one activity type.")
