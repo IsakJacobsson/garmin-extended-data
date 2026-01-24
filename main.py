@@ -3,6 +3,20 @@ import streamlit as st
 
 from load_data import load_data
 
+SUMMABLE_COLUMNS = [
+    "Distans",
+    "Tid",
+    "Total stigning",
+    "Steg",
+    "Kalorier",
+    "Aerobisk Training Effect",
+    "Total stigning",
+    "Totalt nedför",
+    "Totalt antal årtag",
+    "Totalt antal repetitioner",
+    "Totalt antal set",
+]
+
 
 def activity_metrics_over_time_section(df):
     st.header("Activity Metrics Over Time")
@@ -10,17 +24,20 @@ def activity_metrics_over_time_section(df):
     col1, col2 = st.columns(2)
 
     with col1:
-        activities = ["Löpning", "Cykling"]
-        activity = st.pills("Activity", activities, default=activities[0])
+        activities = df["Aktivitetstyp"].unique()
+        selected_activity = st.selectbox("Activity", activities)
 
     # Filter for activity
-    activity_df = df[df["Aktivitetstyp"] == activity].copy()
+    activity_df = df[df["Aktivitetstyp"] == selected_activity].copy()
     activity_df["Datum"] = pd.to_datetime(activity_df["Datum"])
+
+    activity_df = activity_df[SUMMABLE_COLUMNS + ["Datum"]]
+    activity_df = activity_df.dropna(axis=1, how="any")
 
     # Create tabs for different metrics
     with col2:
-        metrics = ["Distans", "Tid", "Total stigning"]
-        metric = st.pills("Metric", metrics, default=metrics[0])
+        metrics = activity_df.columns.drop("Datum")
+        metric = st.selectbox("Metric", metrics)
 
     activity_df["Tid"] = activity_df["Tid"].dt.total_seconds() / 60  # minutes
 
