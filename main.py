@@ -30,23 +30,28 @@ tab_day, tab_week, tab_month, tab_year = st.tabs(["Day", "Week", "Month", "Year"
 
 
 def plot_metric(period_freq, fmt, tab_label):
-    """Aggregate chosen metric and plot bar chart with proper x-axis formatting."""
     temp_df = activity_df.copy()
-    temp_df["Period"] = (
-        temp_df["Datum"].dt.to_period(period_freq).apply(lambda p: p.start_time)
+
+    # Convert to Period (do NOT convert to start_time yet)
+    temp_df["Period"] = temp_df["Datum"].dt.to_period(period_freq)
+
+    # Aggregate with PeriodIndex
+    agg_df = temp_df.groupby("Period")[metric].sum().sort_index()
+
+    # Create full period range (including missing periods)
+    full_range = pd.period_range(
+        start=agg_df.index.min(), end=agg_df.index.max(), freq=period_freq
     )
 
-    # Aggregate
-    agg_df = (
-        temp_df.groupby("Period", as_index=False)[metric].sum().sort_values("Period")
-    )
+    # Reindex to include missing periods
+    agg_df = agg_df.reindex(full_range, fill_value=0)
 
-    # Convert period to string for clean x-axis
-    agg_df["PeriodStr"] = agg_df["Period"].dt.strftime(fmt)
-    print(agg_df["PeriodStr"])
+    # Convert to timestamps just for plotting / labels
+    plot_df = agg_df.to_timestamp(how="start").to_frame(name=metric)
+    plot_df["PeriodStr"] = plot_df.index.strftime(fmt)
 
     with tab_label:
-        st.bar_chart(agg_df.set_index("PeriodStr")[metric])
+        st.bar_chart(plot_df.set_index("PeriodStr")[metric])
 
 
 # Plot each tab
