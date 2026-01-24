@@ -26,17 +26,12 @@ def activity_metrics_over_time_section(df):
     with col1:
         selected_activities = activity_multiselector(df)
 
-    # Filter for activity
-    activity_df = df[df["Aktivitetstyp"].isin(selected_activities)].copy()
-    activity_df["Datum"] = pd.to_datetime(activity_df["Datum"])
-
-    activity_df = activity_df[SUMMABLE_COLUMNS + ["Datum"]]
-    activity_df = activity_df.dropna(axis=1, how="any")
+    activity_df = filter_activities(df, selected_activities)
 
     # Create tabs for different metrics
     with col2:
-        metrics = activity_df.columns.drop("Datum")
-        metric = metric_selector(metrics)
+        valid_metrics = get_valid_metrics(activity_df)
+        selected_metric = metric_selector(valid_metrics)
 
     activity_df["Tid"] = activity_df["Tid"].dt.total_seconds() / 60  # minutes
 
@@ -54,7 +49,7 @@ def activity_metrics_over_time_section(df):
         temp_df["Period"] = temp_df["Datum"].dt.to_period(period_freq)
 
         # Aggregate with PeriodIndex
-        agg_df = temp_df.groupby("Period")[metric].sum().sort_index()
+        agg_df = temp_df.groupby("Period")[selected_metric].sum().sort_index()
 
         # Create full period range (including missing periods)
         full_range = pd.period_range(
@@ -67,11 +62,11 @@ def activity_metrics_over_time_section(df):
         agg_df = agg_df.reindex(full_range, fill_value=0)
 
         # Convert to timestamps just for plotting / labels
-        plot_df = agg_df.to_timestamp(how="start").to_frame(name=metric)
+        plot_df = agg_df.to_timestamp(how="start").to_frame(name=selected_metric)
         plot_df["PeriodStr"] = plot_df.index.strftime(fmt)
 
         with tab_label:
-            st.bar_chart(plot_df.set_index("PeriodStr")[metric])
+            st.bar_chart(plot_df.set_index("PeriodStr")[selected_metric])
 
     # Plot each tab
     plot_metric("D", "%Y-%m-%d", tab_day)  # Day
@@ -94,6 +89,19 @@ def activity_multiselector(df):
 def metric_selector(metrics):
     selected_metric = st.selectbox("Metric", metrics)
     return selected_metric
+
+
+def filter_activities(df, activities):
+    df = df[df["Aktivitetstyp"].isin(activities)].copy()
+    return df
+
+
+def get_valid_metrics(df):
+    valid_metrics = []
+    for col in SUMMABLE_COLUMNS:
+        if not df[col].isna().any():
+            valid_metrics.append(col)
+    return valid_metrics
 
 
 def main():
