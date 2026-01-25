@@ -45,13 +45,21 @@ def activity_metrics_over_time_section(df):
         return
 
     # Create tabs for different resolutions
-    tab_day, tab_week, tab_month, tab_year = st.tabs(["Day", "Week", "Month", "Year"])
+    tab_info = [
+        ("Day", "D", "%Y-%m-%d"),
+        ("Week", "W", "%Y-%W"),
+        ("Month", "M", "%Y-%m"),
+        ("Year", "Y", "%Y"),
+    ]
 
-    # Plot each tab
-    plot_metric_tab(df, selected_metric, "D", "%Y-%m-%d", tab_day, start_date, end_date)
-    plot_metric_tab(df, selected_metric, "W", "%Y-%W", tab_week, start_date, end_date)
-    plot_metric_tab(df, selected_metric, "M", "%Y-%m", tab_month, start_date, end_date)
-    plot_metric_tab(df, selected_metric, "Y", "%Y", tab_year, start_date, end_date)
+    tabs = st.tabs([label for label, _, _ in tab_info])
+
+    for tab, (_, freq, date_format) in zip(tabs, tab_info):
+        agg_df = aggregate_metric_over_time(
+            df, selected_metric, freq, start_date, end_date
+        )
+        with tab:
+            plot_metric(agg_df, selected_metric, date_format)
 
 
 def multiselect(choices, description):
@@ -70,15 +78,12 @@ def selectbox(choices, description):
     return selected_metric
 
 
-def plot_metric_tab(df, metric, freq, fmt, tab, start_date, end_date):
-    agg_df = aggregate_metric_over_time(df, metric, freq, start_date, end_date)
+def plot_metric(df, metric, fmt):
+    df = df.copy()
+    df.index = df.index.to_timestamp(how="start")
+    df["PeriodStr"] = df.index.strftime(fmt)
 
-    plot_df = agg_df.copy()
-    plot_df.index = plot_df.index.to_timestamp(how="start")
-    plot_df["PeriodStr"] = plot_df.index.strftime(fmt)
-
-    with tab:
-        st.bar_chart(plot_df.set_index("PeriodStr")[metric])
+    st.bar_chart(df.set_index("PeriodStr")[metric])
 
 
 def main():
