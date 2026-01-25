@@ -1,6 +1,6 @@
-import pandas as pd
 import streamlit as st
 
+from filters import filter_activities
 from load_data import load_data
 from metrics import aggregate_metric_over_time, get_activities, get_summable_metrics
 
@@ -54,11 +54,6 @@ def multiselect(choices, description):
 def selectbox(choices, description):
     selected_metric = st.selectbox(description, choices)
     return selected_metric
-
-
-def filter_activities(df, activities):
-    df = df[df["Aktivitetstyp"].isin(activities)].copy()
-    return df
 
 
 def convert_time_column_to_hours(df):
