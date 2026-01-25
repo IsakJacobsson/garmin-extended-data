@@ -15,13 +15,13 @@ def activity_metrics_over_time_section(df):
 
     with col1:
         activities = get_activities(df)
-        selected_activities = activity_multiselector(df, activities)
+        selected_activities = multiselector(activities, "Activity type")
 
     activity_df = filter_activities(df, selected_activities)
 
     with col2:
         valid_metrics = get_valid_metrics(activity_df)
-        selected_metric = metric_selector(valid_metrics)
+        selected_metric = selector(valid_metrics, "Metric")
 
     activity_df = convert_time_column_to_hours(activity_df)
 
@@ -47,18 +47,19 @@ def activity_metrics_over_time_section(df):
     )  # Year
 
 
-def activity_multiselector(df, activities):
+def multiselector(choices, description):
+    default = choices[0] if len(choices) > 0 else None
     selected_activities = st.multiselect(
-        "Activity type",
-        activities,
-        default=activities[0] if len(activities) > 0 else None,
+        description,
+        choices,
+        default=default,
         placeholder="Select activity types",
     )
     return selected_activities
 
 
-def metric_selector(metrics):
-    selected_metric = st.selectbox("Metric", metrics)
+def selector(choices, description):
+    selected_metric = st.selectbox(description, choices)
     return selected_metric
 
 
