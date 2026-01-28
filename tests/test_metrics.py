@@ -69,8 +69,6 @@ def test_aggregate_metric_over_time_weekly(sample_df):
         end=pd.Timestamp("2024-01-18"),
     )
 
-    print(result)
-
     # Expect 3 weeks in range
     assert len(result) == 3
 
