@@ -56,11 +56,12 @@ def get_activities(df: pd.DataFrame) -> list[str]:
     return df["Aktivitetstyp"].unique().tolist()
 
 
-def get_days_without_activity(df: pd.DataFrame) -> pd.Series:
+def get_days_without_activity(
+    df: pd.DataFrame, start: pd.Timestamp, end: pd.Timestamp
+) -> pd.Series:
     activity_days = df.index.normalize()
-
-    start = activity_days.min()
-    end = activity_days.max()
+    start = start.normalize()
+    end = end.normalize()
 
     all_days = pd.date_range(start=start, end=end, freq="D")
 

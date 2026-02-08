@@ -85,7 +85,7 @@ def rest_day_stats_section(df: pd.DataFrame):
 
     df = filter_activities(df, active_activities)
 
-    rest_days = get_days_without_activity(df)
+    rest_days = get_days_without_activity(df, start_date, end_date)
 
     aggregation_bar_plot(rest_days, start_date, end_date)
 

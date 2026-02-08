@@ -92,8 +92,8 @@ def test_aggregate_over_time_weekly(sample_series):
     )
 
     expected = pd.Series(
-        [10.0, 10.0],
-        index=pd.to_datetime(["2024-01-07", "2024-01-14"]),
+        [0.0, 10.0, 10.0, 0.0],
+        index=pd.to_datetime(["2023-12-31", "2024-01-07", "2024-01-14", "2024-01-21"]),
     )
 
     assert result.equals(expected)
@@ -173,7 +173,7 @@ def test_days_without_activity_basic():
         ),
     )
 
-    result = get_days_without_activity(df)
+    result = get_days_without_activity(df, df.index.min(), df.index.max())
 
     expected = pd.Series(
         1,
@@ -205,7 +205,7 @@ def test_days_without_activity_no_gaps():
         ),
     )
 
-    result = get_days_without_activity(df)
+    result = get_days_without_activity(df, df.index.min(), df.index.max())
 
     expected = pd.Series([], index=pd.DatetimeIndex([], freq="D"), dtype="int64")
 

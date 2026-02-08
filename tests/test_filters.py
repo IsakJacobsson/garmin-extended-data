@@ -28,3 +28,16 @@ def test_filter_activities_with_no_matching_activities():
     result = filter_activities(df, ["Swim"])
 
     assert result.empty
+
+
+def test_filter_activities_with_empty_filter_list():
+    df = pd.DataFrame(
+        {
+            "Aktivitetstyp": ["Löpning", "Cykling"],
+            "Distans": [5, 10],
+        }
+    )
+
+    result = filter_activities(df, [])
+
+    assert result.empty

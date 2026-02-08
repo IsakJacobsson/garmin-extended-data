@@ -5,7 +5,5 @@ def filter_activities(
     df: pd.DataFrame,
     activities: list[str],
 ) -> pd.DataFrame:
-    if not activities:
-        return df.copy()
     mask = df["Aktivitetstyp"].isin(activities)
     return df.loc[mask].copy()
