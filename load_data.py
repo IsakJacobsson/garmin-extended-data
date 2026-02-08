@@ -102,4 +102,14 @@ def load_data(csv_path: str) -> pd.DataFrame:
         if col in df.columns:
             df[col] = pd.to_timedelta(df[col], errors="coerce")
 
+    # Hour format time
+    hour_format_cols = [
+        "Tid",
+        "Färdtid",
+        "Total tid",
+    ]
+    for col in hour_format_cols:
+        if col in df.columns:
+            df[col] = df[col].dt.total_seconds() / 3600
+
     return df

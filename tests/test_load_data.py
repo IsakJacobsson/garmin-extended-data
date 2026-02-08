@@ -87,22 +87,32 @@ def test_numeric_columns():
 def test_timedelta_columns():
     df = load_data(csv_file)
     time_cols = [
-        "Tid",
         "Medeltempo",
         "Bästa tempo",
         "Medelvärde GAP",
         "Bästa varvtid",
         "Start för stress",
         "Slut för stress",
-        "Färdtid",
-        "Total tid",
     ]
     for col in time_cols:
         assert pd.api.types.is_timedelta64_dtype(df[col])
 
-    assert df.iloc[0]["Tid"].seconds == 46 * 60 + 46
     assert df.iloc[0]["Medeltempo"].seconds == 6 * 60 + 22
     assert df.iloc[0]["Bästa tempo"].seconds == 2 * 60 + 34
     assert df.iloc[0]["Bästa varvtid"].total_seconds() == 56.9
-    assert df.iloc[0]["Färdtid"].seconds == 38 * 60 + 47
-    assert df.iloc[0]["Total tid"].seconds == 46 * 60 + 48
+
+
+def test_hour_format_columns():
+    df = load_data(csv_file)
+    hour_format_cols = [
+        "Tid",
+        "Färdtid",
+        "Total tid",
+    ]
+
+    for col in hour_format_cols:
+        pd.api.types.is_numeric_dtype(df[col])
+
+    assert df.iloc[0]["Tid"] == (46 * 60 + 46) / 3600
+    assert df.iloc[0]["Färdtid"] == (38 * 60 + 47) / 3600
+    assert df.iloc[0]["Total tid"] == (46 * 60 + 48) / 3600

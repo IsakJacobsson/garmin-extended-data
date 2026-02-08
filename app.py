@@ -48,7 +48,6 @@ def activity_metrics_over_time_section(df: pd.DataFrame) -> None:
         valid_metrics = get_summable_metrics(df)
         selected_metric = selectbox(valid_metrics, "Metric")
 
-    df = convert_time_column_to_hours(df)
     metric_data = select_metric_and_drop_zeros(df, selected_metric)
 
     # Create tabs for different resolutions
