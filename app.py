@@ -20,7 +20,7 @@ tab_info = [
 ]
 
 
-def get_user_data_section():
+def get_user_data_section() -> pd.DataFrame:
     csv_file = st.file_uploader("Upload Garmin CSV file", type="csv")
 
     if csv_file is None:
@@ -29,7 +29,7 @@ def get_user_data_section():
     return load_data(csv_file)
 
 
-def activity_metrics_over_time_section(df):
+def activity_metrics_over_time_section(df: pd.DataFrame) -> None:
     st.header("Activity metrics over time")
 
     col1, col2 = st.columns(2)
@@ -49,18 +49,18 @@ def activity_metrics_over_time_section(df):
         selected_metric = selectbox(valid_metrics, "Metric")
 
     df = convert_time_column_to_hours(df)
-    s = select_metric_and_drop_zeros(df, selected_metric)
+    metric_data = select_metric_and_drop_zeros(df, selected_metric)
 
     # Create tabs for different resolutions
     tabs = st.tabs([label for label, _, _ in tab_info])
 
     for tab, (_, freq, date_format) in zip(tabs, tab_info):
-        agg_s = aggregate_over_time(s, freq)
+        aggregated_metric_data = aggregate_over_time(metric_data, freq)
         with tab:
-            plot_metric(agg_s, date_format)
+            plot_metric(aggregated_metric_data, date_format)
 
 
-def multiselect(choices, description):
+def multiselect(choices: list[str], description: str) -> list[str]:
     default = choices[0] if len(choices) > 0 else None
     selected = st.multiselect(
         description,
@@ -71,19 +71,18 @@ def multiselect(choices, description):
     return selected
 
 
-def selectbox(choices, description):
-    selected = st.selectbox(description, choices)
-    return selected
+def selectbox(choices: list[str], description: str) -> str:
+    return st.selectbox(description, choices)
 
 
-def plot_metric(data, fmt):
+def plot_metric(data: pd.Series, fmt: str) -> None:
     data = data.copy()
     data.index = data.index.strftime(fmt)
 
     st.bar_chart(data)
 
 
-def rest_day_stats_section(df):
+def rest_day_stats_section(df: pd.DataFrame):
     st.header("Rest day stats")
 
     # This has to be done before filtering the df, since the full period is
@@ -106,9 +105,11 @@ def rest_day_stats_section(df):
     # Create tabs for different resolutions
     tabs = st.tabs([label for label, _, _ in tab_info])
     for tab, (_, freq, date_format) in zip(tabs, tab_info):
-        agg_s = aggregate_over_time(rest_days, freq, start_date, end_date)
+        aggregated_rest_days = aggregate_over_time(
+            rest_days, freq, start_date, end_date
+        )
         with tab:
-            plot_metric(agg_s, date_format)
+            plot_metric(aggregated_rest_days, date_format)
 
 
 def main():

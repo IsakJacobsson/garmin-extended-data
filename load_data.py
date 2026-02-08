@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def min_sec_to_deltatime_format(s):
+def min_sec_to_deltatime_format(s: str) -> str:
     return "00:" + s
 
 

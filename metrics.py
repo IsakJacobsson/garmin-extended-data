@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 
 SUMMABLE_COLUMNS = [
@@ -15,14 +17,19 @@ SUMMABLE_COLUMNS = [
 ]
 
 
-def convert_time_column_to_hours(df):
+def convert_time_column_to_hours(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     if "Tid" in df.columns:
         df["Tid"] = df["Tid"].dt.total_seconds() / 3600
     return df
 
 
-def aggregate_over_time(s, freq, start=None, end=None):
+def aggregate_over_time(
+    s: pd.Series,
+    freq: str,
+    start: Optional[pd.Timestamp] = None,
+    end: Optional[pd.Timestamp] = None,
+) -> pd.Series:
     if start is None:
         start = s.index.min()
     if end is None:
@@ -42,11 +49,11 @@ def aggregate_over_time(s, freq, start=None, end=None):
     return out
 
 
-def get_activities(df):
-    return df["Aktivitetstyp"].unique()
+def get_activities(df: pd.DataFrame) -> list[str]:
+    return df["Aktivitetstyp"].unique().tolist()
 
 
-def get_days_without_activity(df):
+def get_days_without_activity(df: pd.DataFrame) -> pd.Series:
     activity_days = df.index.normalize()
 
     start = activity_days.min()
@@ -59,14 +66,22 @@ def get_days_without_activity(df):
     return pd.Series(1, index=missing_days)
 
 
-def get_summable_metrics(df):
+def col_exists_and_has_no_na(col_name: str, df: pd.DataFrame) -> bool:
+    exists = col_name in df.columns
+    if not exists:
+        return False
+    has_na = bool(df[col_name].isna().any())
+    return not has_na
+
+
+def get_summable_metrics(df: pd.DataFrame) -> list[str]:
     valid_metrics = []
     for col in SUMMABLE_COLUMNS:
-        if col in df.columns and not df[col].isna().any():
+        if col_exists_and_has_no_na(col, df):
             valid_metrics.append(col)
     return valid_metrics
 
 
-def select_metric_and_drop_zeros(df, metric):
-    s = df[metric]
+def select_metric_and_drop_zeros(df: pd.DataFrame, metric: str) -> pd.Series:
+    s = df.loc[:, metric]
     return s[s != 0]
