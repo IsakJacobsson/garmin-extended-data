@@ -4,13 +4,12 @@ import streamlit as st
 from filters import filter_activities
 from load_data import load_data
 from metrics import (
-    aggregate_over_time,
-    convert_time_column_to_hours,
     get_activities,
     get_days_without_activity,
     get_summable_metrics,
     select_metric_and_drop_zeros,
 )
+from plot import aggregation_bar_plot
 
 tab_info = [
     ("Day", "D", "%Y-%m-%d"),
@@ -50,13 +49,7 @@ def activity_metrics_over_time_section(df: pd.DataFrame) -> None:
 
     metric_data = select_metric_and_drop_zeros(df, selected_metric)
 
-    # Create tabs for different resolutions
-    tabs = st.tabs([label for label, _, _ in tab_info])
-
-    for tab, (_, freq, date_format) in zip(tabs, tab_info):
-        aggregated_metric_data = aggregate_over_time(metric_data, freq)
-        with tab:
-            plot_metric(aggregated_metric_data, date_format)
+    aggregation_bar_plot(metric_data)
 
 
 def multiselect(choices: list[str], description: str) -> list[str]:
@@ -72,13 +65,6 @@ def multiselect(choices: list[str], description: str) -> list[str]:
 
 def selectbox(choices: list[str], description: str) -> str:
     return st.selectbox(description, choices)
-
-
-def plot_metric(data: pd.Series, fmt: str) -> None:
-    data = data.copy()
-    data.index = data.index.strftime(fmt)
-
-    st.bar_chart(data)
 
 
 def rest_day_stats_section(df: pd.DataFrame):
@@ -101,14 +87,7 @@ def rest_day_stats_section(df: pd.DataFrame):
 
     rest_days = get_days_without_activity(df)
 
-    # Create tabs for different resolutions
-    tabs = st.tabs([label for label, _, _ in tab_info])
-    for tab, (_, freq, date_format) in zip(tabs, tab_info):
-        aggregated_rest_days = aggregate_over_time(
-            rest_days, freq, start_date, end_date
-        )
-        with tab:
-            plot_metric(aggregated_rest_days, date_format)
+    aggregation_bar_plot(rest_days, start_date, end_date)
 
 
 def main():
