@@ -20,7 +20,16 @@ tab_info = [
 
 
 def get_user_data_section() -> pd.DataFrame:
-    csv_file = st.file_uploader("Upload Garmin CSV file", type="csv")
+    st.subheader("Upload Garmin CSV file")
+    st.markdown(
+        "Follow the steps below to export your own activity data from Garmin Connect:\n"
+        "1. Navigate to [Garmin Connect activity page](https://connect.garmin.com/app/activities).\n"
+        "2. Make sure the language of Garmin Connect is set to Swedish. This app can only read CSV files in Swedish at the moment.\n"
+        "3. Make sure all activities are loaded by scrolling to the bottom of the activity list. Otherwise they wont be included in the exported CSV file.\n"
+        "4. Press **Exportera CSV**.\n"
+        "5. Upload the exported file below:"
+    )
+    csv_file = st.file_uploader("Garmin CSV file", type="csv")
 
     if csv_file is None:
         return None
